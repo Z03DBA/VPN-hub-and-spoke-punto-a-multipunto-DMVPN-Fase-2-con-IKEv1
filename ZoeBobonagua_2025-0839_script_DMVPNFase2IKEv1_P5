@@ -1,0 +1,132 @@
+#R1 (HUB)
+configure terminal
+crypto isakmp policy 10
+ encryption aes 256
+ hash sha256
+ authentication pre-share
+ group 14
+exit
+crypto isakmp key ClaveDMVPN123 address 0.0.0.0 0.0.0.0
+crypto ipsec transform-set TS-DMVPN esp-aes 256 esp-sha256-hmac
+ mode transport
+exit
+crypto ipsec profile PERFIL-DMVPN
+ set transform-set TS-DMVPN
+exit
+interface GigabitEthernet0/0
+ ip address 192.8.39.1 255.255.255.252
+ no shutdown
+exit
+interface GigabitEthernet0/1
+ ip address 192.8.39.17 255.255.255.240
+ no shutdown
+exit
+ip route 0.0.0.0 0.0.0.0 192.8.39.2
+interface Tunnel0
+ ip address 172.16.0.1 255.255.255.0
+ no ip split-horizon eigrp 1
+ no ip next-hop-self eigrp 1
+ ip nhrp authentication TokenNHRP
+ ip nhrp map multicast dynamic
+ ip nhrp network-id 99
+ tunnel source GigabitEthernet0/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile PERFIL-DMVPN
+ no shutdown
+exit
+router eigrp 1
+ network 172.16.0.0 0.0.0.255
+ network 192.8.39.16 0.0.0.15
+ passive-interface GigabitEthernet0/1
+exit
+
+
+
+#R2 (SPOKE 1)
+
+Plaintext
+configure terminal
+crypto isakmp policy 10
+ encryption aes 256
+ hash sha256
+ authentication pre-share
+ group 14
+exit
+crypto isakmp key ClaveDMVPN123 address 192.8.39.1
+crypto ipsec transform-set TS-DMVPN esp-aes 256 esp-sha256-hmac
+ mode transport
+exit
+crypto ipsec profile PERFIL-DMVPN
+ set transform-set TS-DMVPN
+exit
+interface GigabitEthernet0/0
+ ip address 192.8.39.6 255.255.255.252
+ no shutdown
+exit
+interface GigabitEthernet0/1
+ ip address 192.8.39.33 255.255.255.240
+ no shutdown
+exit
+ip route 0.0.0.0 0.0.0.0 192.8.39.5
+interface Tunnel0
+ ip address 172.16.0.2 255.255.255.0
+ ip nhrp authentication TokenNHRP
+ ip nhrp nhs 172.16.0.1
+ ip nhrp map 172.16.0.1 192.8.39.1
+ ip nhrp map multicast 192.8.39.1
+ ip nhrp network-id 99
+ tunnel source GigabitEthernet0/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile PERFIL-DMVPN
+ no shutdown
+exit
+router eigrp 1
+ network 172.16.0.0 0.0.0.255
+ network 192.8.39.32 0.0.0.15
+ passive-interface GigabitEthernet0/1
+exit
+
+
+#R3 (SPOKE 2)
+
+Plaintext
+configure terminal
+crypto isakmp policy 10
+ encryption aes 256
+ hash sha256
+ authentication pre-share
+ group 14
+exit
+crypto isakmp key ClaveDMVPN123 address 192.8.39.1
+crypto ipsec transform-set TS-DMVPN esp-aes 256 esp-sha256-hmac
+ mode transport
+exit
+crypto ipsec profile PERFIL-DMVPN
+ set transform-set TS-DMVPN
+exit
+interface GigabitEthernet0/0
+ ip address 192.8.39.10 255.255.255.252
+ no shutdown
+exit
+interface GigabitEthernet0/1
+ ip address 192.8.39.49 255.255.255.240
+ no shutdown
+exit
+ip route 0.0.0.0 0.0.0.0 192.8.39.9
+interface Tunnel0
+ ip address 172.16.0.3 255.255.255.0
+ ip nhrp authentication TokenNHRP
+ ip nhrp nhs 172.16.0.1
+ ip nhrp map 172.16.0.1 192.8.39.1
+ ip nhrp map multicast 192.8.39.1
+ ip nhrp network-id 99
+ tunnel source GigabitEthernet0/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile PERFIL-DMVPN
+ no shutdown
+exit
+router eigrp 1
+ network 172.16.0.0 0.0.0.255
+ network 192.8.39.48 0.0.0.15
+ passive-interface GigabitEthernet0/1
+exit
